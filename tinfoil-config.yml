@@ -1,6 +1,6 @@
 cvm-version: 0.10.4
 cpus: 64
-memory: 61440
+memory: 65536
 gpus: 0
 
 models:
