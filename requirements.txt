@@ -1,0 +1,13 @@
+# CPU-only torch installed separately in Dockerfile (from PyTorch CPU index,
+# not PyPI which serves the 2GB+ CUDA wheel by default on Linux).
+#
+# Three model families, three inference stacks:
+#   gliguard        → gliner2 (pulls peft + torch)
+#   llama-pg2       → transformers
+#   tinyguard ×3    → model2vec[inference] (no torch at inference — static embeddings)
+gliner2[local]==1.3.2
+model2vec[inference]==0.8.2
+transformers==4.55.4
+huggingface_hub>=0.25.0
+fastapi==0.138.2
+uvicorn[standard]==0.49.0

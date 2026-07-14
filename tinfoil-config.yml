@@ -1,0 +1,55 @@
+cvm-version: 0.10.4
+cpus: 64
+memory: 61440
+gpus: 0
+
+models:
+  - name: "gliguard"
+    repo: "fastino/gliguard-LLMGuardrails-300M@4c03acfe6fcef7bb806d0ae721742d593ddba387"
+    mpk: "0000000000000000000000000000000000000000000000000000000000000000_0_00000000-0000-0000-0000-000000000000"
+  - name: "llama-prompt-guard-2-86m"
+    repo: "meta-llama/Llama-Prompt-Guard-2-86M@a8ded8e697ce7c355e395a0df51f94adb4a2fd27"
+    mpk: "0000000000000000000000000000000000000000000000000000000000000000_0_00000000-0000-0000-0000-000000000000"
+  - name: "tiny-guard-4m-safety"
+    repo: "enguard/tiny-guard-4m-en-prompt-safety-binary-guardset@aa1ecdd0219cb657fb1c43850b29b5fcd790502e"
+    mpk: "0000000000000000000000000000000000000000000000000000000000000000_0_00000000-0000-0000-0000-000000000000"
+  - name: "tiny-guard-4m-jailbreak"
+    repo: "enguard/tiny-guard-4m-en-prompt-jailbreak-binary-in-the-wild@85d7095c54c05538d6e387f231cc6aed3c328918"
+    mpk: "0000000000000000000000000000000000000000000000000000000000000000_0_00000000-0000-0000-0000-000000000000"
+  - name: "tiny-guard-4m-cyber"
+    repo: "enguard/tiny-guard-4m-en-prompt-safety-cyber-binary-guardset@50f70aeb91a5c10b0a468f0be80aa0607fbfd43d"
+    mpk: "0000000000000000000000000000000000000000000000000000000000000000_0_00000000-0000-0000-0000-000000000000"
+
+containers:
+  - name: "cpu-safeguards"
+    image: "ghcr.io/tinfoilsh/confidential-cpu-safeguards@sha256:0000000000000000000000000000000000000000000000000000000000000000" # placeholder - populated during release
+    restart: always
+    env:
+      - GLIGUARD_MODEL_PATH: "/tinfoil/mpk/mpk-0000000000000000000000000000000000000000000000000000000000000000"
+      - PG2_MODEL_PATH: "/tinfoil/mpk/mpk-0000000000000000000000000000000000000000000000000000000000000000"
+      - TINYGUARD_SAFETY_MODEL_PATH: "/tinfoil/mpk/mpk-0000000000000000000000000000000000000000000000000000000000000000"
+      - TINYGUARD_JAILBREAK_MODEL_PATH: "/tinfoil/mpk/mpk-0000000000000000000000000000000000000000000000000000000000000000"
+      - TINYGUARD_CYBER_MODEL_PATH: "/tinfoil/mpk/mpk-0000000000000000000000000000000000000000000000000000000000000000"
+      - NUM_THREADS: "64"
+      - MAX_CONCURRENCY: "1"
+    tmpfs:
+      /tmp: size=512m,mode=1777,exec
+      /root: size=2g,mode=0700,exec
+    command: ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8001"]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8001/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10m
+
+shim:
+  upstream-port: 8001
+  authenticated: true
+  authenticated-endpoints:
+    - /classify
+    - /classify-all
+  paths:
+    - /classify
+    - /classify-all
+    - /health
+    - /models
