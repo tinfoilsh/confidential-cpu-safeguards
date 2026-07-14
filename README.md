@@ -1,8 +1,4 @@
-# confidential-cpu-safeguards
-
-CPU enclave serving five prompt-injection / safety classifiers for benchmarking. All models run on CPU with no GPU.
-
-Unlike `confidential-pii-cpu` (single OpenAI Privacy Filter model, span-level PII redaction), this repo loads multiple guard models side by side to compare speed and suitability as a prompt-injection classifier — the TODO from the PII writeup.
+3 different classifiers.
 
 ## Models
 
@@ -13,10 +9,6 @@ Unlike `confidential-pii-cpu` (single OpenAI Privacy Filter model, span-level PI
 | tiny-guard-safety        | `enguard/tiny-guard-4m-en-prompt-safety-binary-guardset`       | 4M   | model2vec (no torch) | Prompt safety (binary)                                                                     |
 | tiny-guard-jailbreak     | `enguard/tiny-guard-4m-en-prompt-jailbreak-binary-in-the-wild` | 4M   | model2vec (no torch) | Jailbreak (binary)                                                                         |
 | tiny-guard-cyber         | `enguard/tiny-guard-4m-en-prompt-safety-cyber-binary-guardset` | 4M   | model2vec (no torch) | Cyber-safety (binary)                                                                      |
-
-None of the models require `trust_remote_code` — all use standard loading paths (safetensors + pip packages). This was a key requirement (the Qwen3Guard-Stream-0.6B alternative was rejected partly for requiring `trust_remote_code`).
-
-Models are mounted as verified model packs (MPK) at boot — read-only filesystem at `/tinfoil/mpk/`. No HuggingFace download or egress required. The `mpk` values in `tinfoil-config.yml` are placeholders until model packs are created.
 
 ## API
 
@@ -80,7 +72,3 @@ HF_HOME=$HOME/.cache/huggingface python -m uvicorn server:app --host 0.0.0.0 --p
 ```
 
 Benchmarks live in `tf-test/services/cpu-safeguards/`.
-
-## Deployment
-
-Custom Docker image built in CI (`tinfoil-release.yml`). The `tinfoil-config.yml` image digest and `mpk` values are placeholders until the first release populates them. Model packs must be created via Tinfoil's model packing infrastructure before deployment — fill in the `mpk` values and `*_MODEL_PATH` env vars in `tinfoil-config.yml` with the real mount paths.
