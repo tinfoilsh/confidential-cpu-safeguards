@@ -178,7 +178,15 @@ def _classify_llama_pg2(text: str) -> dict:
         logits = model(**inputs).logits
     scores = torch.softmax(logits, dim=-1)
     pred_id = logits.argmax().item()
-    label = model.config.id2label[pred_id].lower()
+    # Llama PG2 config has generic LABEL_0/LABEL_1 — map to benign/malicious.
+    raw_label = model.config.id2label[pred_id].lower()
+    label = (
+        "malicious"
+        if pred_id == 1
+        else "benign"
+        if raw_label.startswith("label")
+        else raw_label
+    )
     return {
         "label": label,
         "unsafe": label == "malicious",
