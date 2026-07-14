@@ -15,10 +15,12 @@ FROM python:3.12-slim
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
-# CPU-only torch (from the PyTorch CPU index, not PyPI which serves the
-# 2GB+ CUDA wheel by default on Linux). gliner2 and transformers both
-# declare torch as a dependency; pre-installing it means pip skips it.
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
+# CPU-only torch + torchvision (from the PyTorch CPU index, not PyPI which serves the
+# 2GB+ CUDA wheels by default on Linux). gliner2 and transformers both declare
+# torch as a dependency; pre-installing it means pip skips it. torchvision is
+# needed because transformers 5.x lazily imports it via skops (model2vec's
+# deserialization triggers the import chain).
+RUN pip install --no-cache-dir torch torchvision --index-url https://download.pytorch.org/whl/cpu
 
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
