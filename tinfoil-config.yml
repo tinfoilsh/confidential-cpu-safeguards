@@ -44,10 +44,7 @@ containers:
 
 shim:
   upstream-port: 8001
-  authenticated: true
-  authenticated-endpoints:
-    - /classify
-    - /classify-all
+  authenticated: false
   paths:
     - /classify
     - /classify-all
