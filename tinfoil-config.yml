@@ -22,7 +22,7 @@ models:
 
 containers:
   - name: "cpu-safeguards"
-    image: "ghcr.io/tinfoilsh/confidential-cpu-safeguards@sha256:0000000000000000000000000000000000000000000000000000000000000000" # placeholder - populated during release
+    image: "ghcr.io/tinfoilsh/confidential-cpu-safeguards@sha256:21fa13ece2d27930a46a3a2bff85844f76dbfab8f12859752354848a882b2f83" # v0.0.5
     restart: always
     env:
       - GLIGUARD_MODEL_PATH: "/tinfoil/mpk/mpk-976526c1bd94e64d154f0dfb03e5ec303f2f1fe801f4e2e5a9d0aad8ca14cca6"
