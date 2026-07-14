@@ -1,5 +1,5 @@
 cvm-version: 0.10.4
-cpus: 64
+cpus: 32
 memory: 65536
 gpus: 0
 
@@ -30,7 +30,7 @@ containers:
       - TINYGUARD_SAFETY_MODEL_PATH: "/tinfoil/mpk/mpk-ba65c14900d73956d67a6ce23215b6f0ac9a3195d6def6322b93046b43725587"
       - TINYGUARD_JAILBREAK_MODEL_PATH: "/tinfoil/mpk/mpk-2cbde9fff5c439a8ad2cc88e0ffd30ff288657b0104b151f53dae2740a19bcd1"
       - TINYGUARD_CYBER_MODEL_PATH: "/tinfoil/mpk/mpk-9b7cd55d48d8d22b5e4dd6d7ce4454cde30bab51296a8977452a4c6a0fc70c3d"
-      - NUM_THREADS: "64"
+      - NUM_THREADS: "32"
       - MAX_CONCURRENCY: "1"
     tmpfs:
       /tmp: size=512m,mode=1777,exec
