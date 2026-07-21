@@ -71,14 +71,17 @@ def load_models() -> None:
         from gliner2 import GLiNER2
 
         key, env_var, repo_id = MODEL_CONFIGS[0]
-        path = os.environ.get(env_var, repo_id)
-        log.info("Loading GLiGuard from %s...", path)
-        gliguard = GLiNER2.from_pretrained(path)
-        gliguard.to("cpu")
-        gliguard.classify_text("warmup", {"prompt_safety": SAFETY_LABELS})
-        models[key] = gliguard
-        semaphores[key] = asyncio.Semaphore(max_concurrency)
-        log.info("GLiGuard loaded.")
+        path = os.environ.get(env_var)
+        if not path:
+            log.info("Skipping GLiGuard (env var %s not set)", env_var)
+        else:
+            log.info("Loading GLiGuard from %s...", path)
+            gliguard = GLiNER2.from_pretrained(path)
+            gliguard.to("cpu")
+            gliguard.classify_text("warmup", {"prompt_safety": SAFETY_LABELS})
+            models[key] = gliguard
+            semaphores[key] = asyncio.Semaphore(max_concurrency)
+            log.info("GLiGuard loaded.")
     except Exception:
         log.exception("Failed to load GLiGuard")
 
@@ -87,19 +90,22 @@ def load_models() -> None:
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
         key, env_var, repo_id = MODEL_CONFIGS[1]
-        path = os.environ.get(env_var, repo_id)
-        log.info("Loading Llama Prompt Guard 2 86M from %s...", path)
-        pg2_tokenizer = AutoTokenizer.from_pretrained(path)
-        pg2_model = AutoModelForSequenceClassification.from_pretrained(path)
-        pg2_model.eval()
-        inputs = pg2_tokenizer(
-            "warmup", return_tensors="pt", truncation=True, max_length=512
-        )
-        with torch.no_grad():
-            pg2_model(**inputs)
-        models[key] = {"tokenizer": pg2_tokenizer, "model": pg2_model}
-        semaphores[key] = asyncio.Semaphore(max_concurrency)
-        log.info("Llama Prompt Guard 2 86M loaded.")
+        path = os.environ.get(env_var)
+        if not path:
+            log.info("Skipping Llama Prompt Guard 2 (env var %s not set)", env_var)
+        else:
+            log.info("Loading Llama Prompt Guard 2 86M from %s...", path)
+            pg2_tokenizer = AutoTokenizer.from_pretrained(path)
+            pg2_model = AutoModelForSequenceClassification.from_pretrained(path)
+            pg2_model.eval()
+            inputs = pg2_tokenizer(
+                "warmup", return_tensors="pt", truncation=True, max_length=512
+            )
+            with torch.no_grad():
+                pg2_model(**inputs)
+            models[key] = {"tokenizer": pg2_tokenizer, "model": pg2_model}
+            semaphores[key] = asyncio.Semaphore(max_concurrency)
+            log.info("Llama Prompt Guard 2 86M loaded.")
     except Exception:
         log.exception("Failed to load Llama Prompt Guard 2 86M")
 
@@ -108,7 +114,10 @@ def load_models() -> None:
         from model2vec.inference import StaticModelPipeline
 
         for key, env_var, repo_id in MODEL_CONFIGS[2:]:
-            path = os.environ.get(env_var, repo_id)
+            path = os.environ.get(env_var)
+            if not path:
+                log.info("Skipping %s (env var %s not set)", key, env_var)
+                continue
             log.info("Loading %s from %s...", key, path)
             pipe = StaticModelPipeline.from_pretrained(path)
             pipe.predict(["warmup"])
