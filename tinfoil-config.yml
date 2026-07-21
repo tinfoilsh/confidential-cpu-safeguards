@@ -7,18 +7,6 @@ models:
   - name: "gliguard"
     repo: "fastino/gliguard-LLMGuardrails-300M@4c03acfe6fcef7bb806d0ae721742d593ddba387"
     mpk: "976526c1bd94e64d154f0dfb03e5ec303f2f1fe801f4e2e5a9d0aad8ca14cca6_842289152_3188f523-66ef-5788-8173-412ada5cdd33"
-  - name: "llama-prompt-guard-2-86m"
-    repo: "meta-llama/Llama-Prompt-Guard-2-86M@a8ded8e697ce7c355e395a0df51f94adb4a2fd27"
-    mpk: "360495f8a4ea2567a4e006463802ea9ffc836492f9e69377c838e9dbbe87a68a_1131679744_abf2a692-e823-51fa-ae7c-98e6c9527484"
-  - name: "tiny-guard-4m-safety"
-    repo: "enguard/tiny-guard-4m-en-prompt-safety-binary-guardset@aa1ecdd0219cb657fb1c43850b29b5fcd790502e"
-    mpk: "ba65c14900d73956d67a6ce23215b6f0ac9a3195d6def6322b93046b43725587_17883136_7b75bf8f-90de-5646-a8c6-7537553d5762"
-  - name: "tiny-guard-4m-jailbreak"
-    repo: "enguard/tiny-guard-4m-en-prompt-jailbreak-binary-in-the-wild@85d7095c54c05538d6e387f231cc6aed3c328918"
-    mpk: "2cbde9fff5c439a8ad2cc88e0ffd30ff288657b0104b151f53dae2740a19bcd1_17874944_0a6dfc5f-bec3-51eb-a52d-0014cc2ca1ad"
-  - name: "tiny-guard-4m-cyber"
-    repo: "enguard/tiny-guard-4m-en-prompt-safety-cyber-binary-guardset@50f70aeb91a5c10b0a468f0be80aa0607fbfd43d"
-    mpk: "9b7cd55d48d8d22b5e4dd6d7ce4454cde30bab51296a8977452a4c6a0fc70c3d_17883136_3f7cac7d-4d49-5922-9e0f-c666ab968577"
 
 containers:
   - name: "cpu-safeguards"
@@ -26,12 +14,8 @@ containers:
     restart: always
     env:
       - GLIGUARD_MODEL_PATH: "/tinfoil/mpk/mpk-976526c1bd94e64d154f0dfb03e5ec303f2f1fe801f4e2e5a9d0aad8ca14cca6"
-      - PG2_MODEL_PATH: "/tinfoil/mpk/mpk-360495f8a4ea2567a4e006463802ea9ffc836492f9e69377c838e9dbbe87a68a"
-      - TINYGUARD_SAFETY_MODEL_PATH: "/tinfoil/mpk/mpk-ba65c14900d73956d67a6ce23215b6f0ac9a3195d6def6322b93046b43725587"
-      - TINYGUARD_JAILBREAK_MODEL_PATH: "/tinfoil/mpk/mpk-2cbde9fff5c439a8ad2cc88e0ffd30ff288657b0104b151f53dae2740a19bcd1"
-      - TINYGUARD_CYBER_MODEL_PATH: "/tinfoil/mpk/mpk-9b7cd55d48d8d22b5e4dd6d7ce4454cde30bab51296a8977452a4c6a0fc70c3d"
-      - NUM_THREADS: "32"
-      - MAX_CONCURRENCY: "1"
+      - NUM_THREADS: "4"
+      - MAX_CONCURRENCY: "16"
     tmpfs:
       /tmp: size=512m,mode=1777,exec
       /root: size=2g,mode=0700,exec
