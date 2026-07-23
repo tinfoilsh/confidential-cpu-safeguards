@@ -36,6 +36,28 @@ semaphores: dict[str, asyncio.Semaphore] = {}
 
 SAFETY_LABELS = ["safe", "unsafe"]
 
+# GLiGuard jailbreak_detection task: 12 attack strategies + benign.
+# Multi-label — a prompt can match multiple strategies at once.
+JAILBREAK_LABELS = [
+    "prompt_injection",
+    "jailbreak_attempt",
+    "policy_evasion",
+    "instruction_override",
+    "system_prompt_exfiltration",
+    "data_exfiltration",
+    "roleplay_bypass",
+    "hypothetical_bypass",
+    "obfuscated_attack",
+    "multi_step_attack",
+    "social_engineering",
+    "benign",
+]
+JAILBREAK_TASK = {
+    "labels": JAILBREAK_LABELS,
+    "multi_label": True,
+    "cls_threshold": 0.4,
+}
+
 # Each model: (server_key, env_var for model path, HF repo ID fallback for local dev)
 MODEL_CONFIGS = [
     ("gliguard", "GLIGUARD_MODEL_PATH", "fastino/gliguard-LLMGuardrails-300M"),
@@ -176,6 +198,23 @@ def _classify_gliguard(text: str) -> dict:
     return {"label": label, "unsafe": label == "unsafe"}
 
 
+def _classify_gliguard_jb(text: str) -> dict:
+    """GLiGuard jailbreak_detection task (multi-label, 12 strategies)."""
+    result = models["gliguard"].classify_text(
+        text, {"jailbreak_detection": JAILBREAK_TASK}, threshold=0.5
+    )
+    labels = result.get("jailbreak_detection", [])
+    if isinstance(labels, str):
+        labels = [labels]
+    # unsafe if any non-benign label is detected
+    unsafe_labels = [l for l in labels if l != "benign"]
+    return {
+        "label": ",".join(unsafe_labels) if unsafe_labels else "benign",
+        "unsafe": len(unsafe_labels) > 0,
+        "score": None,
+    }
+
+
 def _classify_llama_pg2(text: str) -> dict:
     import torch
 
@@ -221,6 +260,7 @@ def _classify_tinyguard(text: str, model_key: str) -> dict:
 
 CLASSIFIERS = {
     "gliguard": _classify_gliguard,
+    "gliguard-jb": _classify_gliguard_jb,
     "llama-pg2": _classify_llama_pg2,
     "tinyguard-safety": lambda text: _classify_tinyguard(text, "tinyguard-safety"),
     "tinyguard-jailbreak": lambda text: _classify_tinyguard(
@@ -228,6 +268,17 @@ CLASSIFIERS = {
     ),
     "tinyguard-cyber": lambda text: _classify_tinyguard(text, "tinyguard-cyber"),
 }
+
+
+# Map classifier keys to the model instance they use.
+# gliguard-jb reuses the gliguard model (same weights, different task).
+MODEL_ALIAS = {
+    "gliguard-jb": "gliguard",
+}
+
+
+def _get_model_key(classifier_key: str) -> str:
+    return MODEL_ALIAS.get(classifier_key, classifier_key)
 
 
 # --- Endpoints ---
@@ -250,11 +301,12 @@ async def classify(req: ClassifyRequest):
             400,
             f"Unknown model: {req.model}. Available: {sorted(CLASSIFIERS.keys())}",
         )
-    if req.model not in models:
+    model_key = _get_model_key(req.model)
+    if model_key not in models:
         raise HTTPException(
             503, f"Model {req.model} failed to load. Check server logs."
         )
-    async with semaphores[req.model]:
+    async with semaphores[model_key]:
         start = time.perf_counter()
         result = await run_in_threadpool(CLASSIFIERS[req.model], req.text)
         result["latency_ms"] = (time.perf_counter() - start) * 1000
@@ -266,10 +318,11 @@ async def classify(req: ClassifyRequest):
 async def classify_all(req: ClassifyAllRequest):
     results = {}
     for name, fn in CLASSIFIERS.items():
-        if name not in models:
+        model_key = _get_model_key(name)
+        if model_key not in models:
             results[name] = {"error": "model not loaded"}
             continue
-        async with semaphores[name]:
+        async with semaphores[model_key]:
             start = time.perf_counter()
             try:
                 result = await run_in_threadpool(fn, req.text)
