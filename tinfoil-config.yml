@@ -10,10 +10,11 @@ models:
 
 containers:
   - name: "cpu-safeguards"
+    models: ["gliguard"]
     image: "ghcr.io/tinfoilsh/confidential-cpu-safeguards@sha256:0000000000000000000000000000000000000000000000000000000000000000" # placeholder - populated during release
     restart: always
     env:
-      - GLIGUARD_MODEL_PATH: "/tinfoil/mpk/mpk-976526c1bd94e64d154f0dfb03e5ec303f2f1fe801f4e2e5a9d0aad8ca14cca6"
+      - GLIGUARD_MODEL_PATH: "/tinfoil/models/gliguard"
       - NUM_THREADS: "4"
       - MAX_CONCURRENCY: "16"
     tmpfs:

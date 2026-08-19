@@ -7,7 +7,7 @@
 #   tinyguard-cyber     (enguard/tiny-guard-4m, 4M, model2vec)
 #
 # Models are mounted as verified model packs (MPK) at boot — read-only
-# filesystem at /tinfoil/mpk/. No HuggingFace download or egress required.
+# filesystems at /tinfoil/models/<name>/. No HuggingFace download or egress required.
 # Model paths are set via env vars in tinfoil-config.yml.
 
 FROM python:3.12-slim
