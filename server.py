@@ -10,7 +10,7 @@ benchmarking on CPU:
   tinyguard-cyber     enguard/tiny-guard-4m-en-prompt-safety-cyber-binary-guardset
 
 Models are mounted as verified model packs (MPK) at boot — read-only
-filesystem at /tinfoil/mpk/. No HuggingFace download or egress required.
+filesystems at /tinfoil/models/<name>/. No HuggingFace download or egress required.
 
 For local development (without MPK), set the *_MODEL_PATH env vars to
 HuggingFace repo IDs and the models will download from the HF cache.

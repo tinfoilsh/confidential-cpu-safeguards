@@ -1,7 +1,7 @@
 """Download all models to the HF cache for LOCAL DEVELOPMENT only.
 
 Not used in the Docker image — in production, models are mounted as
-verified model packs (MPK) at /tinfoil/mpk/. This script is for running
+verified model packs (MPK) at /tinfoil/models/<name>/. This script is for running
 the server locally without MPK:
 
     python download_models.py
